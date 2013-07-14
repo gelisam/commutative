@@ -1,0 +1,36 @@
+Name:                commutative
+Version:             0.1
+
+-- A short (one-line) description of the package.
+Synopsis:            Using the type system to guarantee commutativity.
+
+-- A longer description of the package.
+-- Description:         
+
+Homepage:            https://github.com/gelisam/commutative
+License:             PublicDomain
+License-file:        LICENSE
+Author:              Samuel Gélineau
+Maintainer:          gelisam@gmail.com
+
+Category:            Math
+
+Build-type:          Simple
+Cabal-version:       >=1.8
+
+Extra-source-files:  README.md,
+                     Makefile
+
+Library
+  hs-source-dirs: src
+  
+  Exposed-modules:     Math.Fib
+  -- Other-modules:       
+  
+  Build-depends:       base >= 4 && < 5
+
+executable commutative-demo
+  build-depends:  base >= 4 && < 5,
+                  commutative >= 0.1 && < 1
+  main-is:        Main.hs
+  hs-source-dirs: demo
