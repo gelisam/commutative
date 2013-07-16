@@ -1,4 +1,4 @@
-import Math.Fib
+import Control.Commutative
 
 
 main = putStrLn "typechecks."
