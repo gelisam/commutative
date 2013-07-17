@@ -1,6 +1,9 @@
 module Control.Commutative
   ( Commutative ()
   , runCommutative
+  , DepEq (..)
+  , depEq
+  , observe_eq
   )
 where
 
@@ -37,3 +40,34 @@ instance Monad (Commutative r) where
       x = runCommutative cx r1 r2
       y = runCommutative cy r1 r2
       cy = f x
+
+
+-- the type of the second value(s)
+-- depends on whether the first are equal.
+data DepEq r a b = Same (r, a) | Different (r, b) (r, b)
+                   deriving (Eq, Ord, Show)
+
+-- not commutative because the values of type b can give away
+-- whether the arguments were swapped or not.
+depEq :: Ord r => a -> (r, b) -> (r, b) -> DepEq r a b
+depEq x (r, y) (r', y') = case compare r r' of
+                            LT -> Different (r, y) (r', y')
+                            EQ -> Same (r, x)
+                            GT -> Different (r', y') (r, y)
+
+-- commutative because the values of type b cannot give away
+-- whether the arguments were swapped or not.
+-- 
+-- More formally, let (x , y ) = observe r
+--                    (x', y') = observe r'
+--                    f = observe_eq observe
+-- we want to show that f r r' = f r' r.
+-- 
+-- wlog, let x <= x'. Then, either
+--   f r r' = Same (x, ()) = f r' r
+-- or
+--   f r r' = Different (x, y) (x', y') = f r' r
+-- qed.
+observe_eq :: Ord a => (r -> (a, b)) -> Commutative r (DepEq a () b)
+observe_eq observe = Commutative scope where
+  scope r1 r2 = depEq () (observe r1) (observe r2)
