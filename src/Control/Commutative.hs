@@ -8,32 +8,32 @@ import Control.Applicative
 import Data.Profunctor
 
 
-data Commutative a b = Commutative {
-  runCommutative :: a -> a -> b
+data Commutative r a = Commutative {
+  runCommutative :: r -> r -> a
 }
 
 instance Profunctor Commutative where
   dimap f g c = Commutative scope where
-    scope a1' a2' = b' where
-      a1 = f a1'
-      a2 = f a2'
-      b' = g b
-      b = runCommutative c a1 a2
+    scope r1' r2' = x' where
+      r1 = f r1'
+      r2 = f r2'
+      x' = g x
+      x = runCommutative c r1 r2
 
-instance Functor (Commutative a) where
+instance Functor (Commutative r) where
   fmap = rmap
 
-instance Applicative (Commutative a) where
+instance Applicative (Commutative r) where
   pure = Commutative . const . const
   cf <*> cx = Commutative scope where
-    scope a1 a2 = f x where
-      f = runCommutative cf a1 a2
-      x = runCommutative cx a1 a2
+    scope r1 r2 = f x where
+      f = runCommutative cf r1 r2
+      x = runCommutative cx r1 r2
 
-instance Monad (Commutative a) where
+instance Monad (Commutative r) where
   return = Commutative . const . const
   cx >>= f = Commutative scope where
-    scope a1 a2 = y where
-      x = runCommutative cx a1 a2
-      y = runCommutative cy a1 a2
+    scope r1 r2 = y where
+      x = runCommutative cx r1 r2
+      y = runCommutative cy r1 r2
       cy = f x
