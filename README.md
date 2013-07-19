@@ -3,8 +3,6 @@ commutative
 
 Using the type system to guarantee commutativity.
 
-(work in progress)
-
 
 usage
 -----
