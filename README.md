@@ -51,8 +51,8 @@ Without `Commutative`, the type of your higher-order function might be too loose
 But if you wrote `lookupBy'` assuming its argument was commutative, you would probably accept a pull request suggesting the following reimplementation. The new code has less moving parts, and it has the same behaviour as the previous implementation. Or has it?
 
         lookupBy' :: (a -> a -> Bool) -> a -> [(a, b)] -> Maybe b
-        lookupBy' eq x = listToMaybe . dropWhile not_x where
-          not_x = not . eq x
+        lookupBy' eq x = fmap snd . listToMaybe . dropWhile not_x where
+          not_x = not . eq x . fst
         
         >>> lookupBy' (==) 10 env
         Just 'c'
