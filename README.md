@@ -24,7 +24,7 @@ The commutativity of `runCommutative` _c_ is guaranteed, because _c_ represents 
           case zz of
             TT -> return True        -- (0 == 0)
             TF -> return False       -- (0 != succ y), and also (succ x != 0)
-            FF -> lmap pred eq_int  -- (succ x == succ y) iff (x == y)
+            FF -> eq_int `on` pred   -- (succ x == succ y) iff (x == y)
         
         >>> let env = [(1,'a'), (5,'b'), (10,'c'), (15,'d'), (20, 'e')]
         >>> lookupBy eq_int 10 env
