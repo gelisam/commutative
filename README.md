@@ -41,7 +41,7 @@ Without `Commutative`, the type of your higher-order function might be too loose
         lookupBy' :: (a -> a -> Bool) -> a -> [(a, b)] -> Maybe b
         lookupBy' eq x [] = Nothing
         lookupBy' eq x ((k,v):env) | k `eq` x  = Just v
-        lookupBy' eq x ((k,v):env) | otherwise = lookupBy eq x env
+        lookupBy' eq x ((k,v):env) | otherwise = lookupBy' eq x env
         
         >>> lookupBy' (==) 10 env
         Just 'c'
