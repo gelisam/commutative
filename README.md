@@ -30,13 +30,13 @@ The commutativity of `runCommutative` _c_ is guaranteed, because _c_ represents 
         >>> lookupBy eq_int 10 env
         Just 'c'
 
-The `TT`, `TF` and `FF` above represent each possible unordered pair of booleans. Since the pair is unordered, the pairs `(True, False)` and `(False, True)` are both represented by `TF`.
+The `TT`, `TF` and `FF` above represent each possible unordered pair of booleans. Since the pairs are unordered, the pairs `(True, False)` and `(False, True)` are both represented by `TF`.
 
 
 motivation
 ----------
 
-Without `Commutative`, the type of your higher-order function will be too loose. Your function will accept non-commutative arguments; that in itself isn't too bad, and your function might even produce a useful result...
+Without `Commutative`, the type of your higher-order function might be too loose. Your function will accept non-commutative arguments; that in itself isn't too bad, and your function might even produce a useful result...
 
         lookupBy' :: (a -> a -> Bool) -> a -> [(a, b)] -> Maybe b
         lookupBy' eq x [] = Nothing
@@ -48,7 +48,7 @@ Without `Commutative`, the type of your higher-order function will be too loose.
         >>> lookupBy' (>) 10 env
         Just 'd'
 
-But if you wrote `lookupBy'` assuming its argument was commutative, you would probably accept a pull request suggesting the following reimplementation. The new code has less moving parts, and it has the same behaviour as the previous implementation. Or does it?
+But if you wrote `lookupBy'` assuming its argument was commutative, you would probably accept a pull request suggesting the following reimplementation. The new code has less moving parts, and it has the same behaviour as the previous implementation. Or has it?
 
         lookupBy' :: (a -> a -> Bool) -> a -> [(a, b)] -> Maybe b
         lookupBy' eq x = listToMaybe . dropWhile not_x where
