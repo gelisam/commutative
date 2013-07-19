@@ -23,7 +23,8 @@ Extra-source-files:  README.md,
 Library
   hs-source-dirs: src
   
-  Exposed-modules:     Control.Commutative
+  Exposed-modules:     Control.Commutative,
+                       Data.Unordered
   -- Other-modules:       
   
   Build-depends:       base >= 4 && < 5,

@@ -4,6 +4,7 @@ module Control.Commutative
   , DepEq (..)
   , depEq
   , observe_eq
+  , observe_eq_and
   )
 where
 
@@ -60,7 +61,7 @@ depEq x (r, y) (r', y') = case compare r r' of
 -- 
 -- More formally, let (x , y ) = observe r
 --                    (x', y') = observe r'
---                    f = observe_eq observe
+--                    f = observe_eq_and observe
 -- we want to show that f r r' = f r' r.
 -- 
 -- wlog, let x <= x'. Then, either
@@ -68,6 +69,13 @@ depEq x (r, y) (r', y') = case compare r r' of
 -- or
 --   f r r' = Different (x, y) (x', y') = f r' r
 -- qed.
-observe_eq :: Ord a => (r -> (a, b)) -> Commutative r (DepEq a () b)
-observe_eq observe = Commutative scope where
+observe_eq_and :: Ord a => (r -> (a, b)) -> Commutative r (DepEq a () b)
+observe_eq_and observe = Commutative scope where
   scope r1 r2 = depEq () (observe r1) (observe r2)
+
+-- simpler variant
+observe_eq :: Ord a => (r -> a) -> Commutative r (Either a (a, a))
+observe_eq observe = simplify <$> observe_eq_and observe' where
+  observe' r = (observe r, ())
+  simplify (Same (x, ())) = Left x
+  simplify (Different (x, ()) (x', ())) = Right (x, x')
