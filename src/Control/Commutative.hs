@@ -1,10 +1,11 @@
 module Control.Commutative
   ( Commutative ()
   , runCommutative
+  , on
   , DepEq (..)
   , depEq
+  , eq_and_more
   , observe_eq
-  , observe_eq_and
   )
 where
 
@@ -26,6 +27,9 @@ instance Profunctor Commutative where
 
 instance Functor (Commutative r) where
   fmap = rmap
+
+on :: Commutative r' a -> (r -> r') -> Commutative r a
+on = flip lmap
 
 instance Applicative (Commutative r) where
   pure = Commutative . const . const
@@ -59,9 +63,9 @@ depEq x (r, y) (r', y') = case compare r r' of
 -- commutative because the values of type b cannot give away
 -- whether the arguments were swapped or not.
 -- 
--- More formally, let (x , y ) = observe r
---                    (x', y') = observe r'
---                    f = observe_eq_and observe
+-- More formally, let (x , y ) = r
+--                    (x', y') = r'
+--                    f = runCommutative eq_and_more
 -- we want to show that f r r' = f r' r.
 -- 
 -- wlog, let x <= x'. Then, either
@@ -69,13 +73,12 @@ depEq x (r, y) (r', y') = case compare r r' of
 -- or
 --   f r r' = Different (x, y) (x', y') = f r' r
 -- qed.
-observe_eq_and :: Ord a => (r -> (a, b)) -> Commutative r (DepEq a () b)
-observe_eq_and observe = Commutative scope where
-  scope r1 r2 = depEq () (observe r1) (observe r2)
+eq_and_more :: Ord a => Commutative (a, b) (DepEq a () b)
+eq_and_more = Commutative $ depEq ()
 
 -- simpler variant
-observe_eq :: Ord a => (r -> a) -> Commutative r (Either a (a, a))
-observe_eq observe = simplify <$> observe_eq_and observe' where
-  observe' r = (observe r, ())
-  simplify (Same (x, ())) = Left x
-  simplify (Different (x, ()) (x', ())) = Right (x, x')
+observe_eq :: Ord a => Commutative a (Either a (a, a))
+observe_eq = dimap wrap unwrap eq_and_more where
+  wrap r = (r, ())
+  unwrap (Same (x, ())) = Left x
+  unwrap (Different (x, ()) (x', ())) = Right (x, x')
