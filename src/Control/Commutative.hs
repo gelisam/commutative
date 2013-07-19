@@ -28,7 +28,7 @@ instance Profunctor Commutative where
 instance Functor (Commutative r) where
   fmap = rmap
 
-on :: Commutative r' a -> (r -> r') -> Commutative r a
+on :: Profunctor f => f r' a -> (r -> r') -> f r a
 on = flip lmap
 
 instance Applicative (Commutative r) where
