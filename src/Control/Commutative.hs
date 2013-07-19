@@ -82,3 +82,9 @@ observe_eq = dimap wrap unwrap eq_and_more where
   wrap r = (r, ())
   unwrap (Same (x, ())) = Left x
   unwrap (Different (x, ()) (x', ())) = Right (x, x')
+
+-- even simpler
+sort2 :: Ord a => Commutative a (a, a)
+sort2 = simplify <$> observe_eq where
+  simplify (Left x) = (x, x)
+  simplify (Right (x, x')) = (x, x')
