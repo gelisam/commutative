@@ -9,7 +9,6 @@ Synopsis:            Using the type system to guarantee commutativity.
 
 Homepage:            https://github.com/gelisam/commutative
 License:             PublicDomain
-License-file:        LICENSE
 Author:              Samuel Gélineau
 Maintainer:          gelisam@gmail.com
 
