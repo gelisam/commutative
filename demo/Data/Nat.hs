@@ -3,20 +3,31 @@ module Data.Nat where
 
 import Control.Applicative
 import Control.Commutative
+import Data.List
 import Data.Unordered
+import Test.QuickCheck
 
 
 data Nat = Zero | Succ Nat
            deriving (Eq, Ord, Show)
 
--- |
+instance Arbitrary Nat where
+  arbitrary = fmap fromList arbitrary where
+    fromList []      = Zero
+    fromList (():xs) = Succ (fromList xs)
+  shrink = unfoldr shrinkNat where
+    shrinkNat Zero     = Nothing
+    shrinkNat (Succ x) = Just (x, x)
+
+-- | Non-commutative versions of (+) and (*).
+-- 
 -- >>> fromInteger 3 :: Nat
 -- Succ (Succ (Succ Zero))
 -- 
--- prop> if x >= 0 && y >= 0           then fromInteger (x + y)    == (fromInteger x + fromInteger y :: Nat) else True
--- prop> if x >= 0 && y >= 0           then fromInteger (x * y)    == (fromInteger x * fromInteger y :: Nat) else True
--- prop> if x >= 0 && y >= 0 && x >= y then fromInteger (x - y)    == (fromInteger x - fromInteger y :: Nat) else True
--- prop> if x >= 0 && y >= 0           then fromInteger (signum x) == (signum (fromInteger x)        :: Nat) else True
+-- prop>                fromEnum x + fromEnum y == fromEnum (x + y :: Nat)
+-- prop>                fromEnum x * fromEnum y == fromEnum (x * y :: Nat)
+-- prop> if x >= y then fromEnum x - fromEnum y == fromEnum (x - y :: Nat) else True
+-- prop>                signum (fromEnum x)     == fromEnum (signum x :: Nat)
 instance Num Nat where
   Zero   + x' = x'
   Succ x + x' = Succ (x + x')
@@ -36,3 +47,19 @@ instance Num Nat where
   
   fromInteger 0     = Zero
   fromInteger (x+1) = Succ (fromInteger x)
+
+-- |
+-- >>> toEnum 3 :: Nat
+-- Succ (Succ (Succ Zero))
+-- 
+-- >>> fromEnum (Succ (Succ (Succ Zero)))
+-- 3
+instance Enum Nat where
+  succ = Succ
+  pred (Succ x) = x
+  
+  toEnum 0     = Zero
+  toEnum (x+1) = Succ (toEnum x)
+  
+  fromEnum Zero     = 0
+  fromEnum (Succ x) = succ (fromEnum x)

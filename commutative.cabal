@@ -32,6 +32,7 @@ Library
 
 executable commutative-demo
   build-depends:  base >= 4 && < 5,
-                  commutative >= 0.1 && < 1
+                  commutative >= 0.1 && < 1,
+                  QuickCheck >= 2 && < 3
   main-is:        Main.hs
   hs-source-dirs: demo
