@@ -11,8 +11,8 @@ dist/setup-config:
 	cabal-dev configure
 
 build: config
-	cabal-dev build | cat
-	@cabal-dev build &> /dev/null
+	cabal-dev install | cat
+	@cabal-dev install &> /dev/null
 
 doc: build
 	find src demo -name '*.hs' | xargs haddock --optghc='-package-db '"$$(ls -d cabal-dev/packages-*.conf)" --no-warnings --odir=doc --html
