@@ -1,4 +1,4 @@
-{-# OPTIONS -XNPlusKPatterns #-}
+{-# OPTIONS -XNPlusKPatterns -XTypeFamilies #-}
 module Data.Nat where
 
 import Control.Applicative
@@ -63,3 +63,18 @@ instance Enum Nat where
   
   fromEnum Zero     = 0
   fromEnum (Succ x) = succ (fromEnum x)
+
+
+data Unordered_Nat = ZZ | ZS Nat | SS Unordered_Nat
+
+instance Unorderable Nat where
+  type Unordered Nat = Unordered_Nat
+  unorder = do nn <- distinguish `on` isZero
+               case nn of
+                 LL ()   -> return $ ZZ
+                 LR () x -> return $ ZS x
+                 RR ()   -> SS <$> unorder `on` pred
+            where
+    isZero :: Nat -> Either () Nat
+    isZero Zero     = Left ()
+    isZero (Succ x) = Right x
