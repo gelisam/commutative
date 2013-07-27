@@ -1,10 +1,9 @@
-{-# OPTIONS -XTypeFamilies -XNPlusKPatterns #-}
+{-# OPTIONS -XTypeFamilies #-}
 module Data.Unordered where
 
 import Control.Applicative
 import Control.Commutative
 import Data.Maybe
-import Data.Profunctor
 
 
 class Unorderable a where
@@ -69,19 +68,3 @@ instance (Unorderable a, Unorderable b) => Unorderable (Either a b) where
     
     fromRight :: Either a b -> b
     fromRight (Right y) = y
-
-
-data Unordered_Nat = ZZ | ZS Int | SS Unordered_Nat
-                     deriving (Eq, Ord, Show)
-
-instance Unorderable Int where
-  type Unordered Int = Unordered_Nat
-  unorder = do nn <- distinguish `on` isZero
-               case nn of
-                 LL ()   -> return $ ZZ
-                 LR () x -> return $ ZS x
-                 RR ()   -> SS <$> unorder `on` pred
-            where
-    isZero :: Int -> Either () Int
-    isZero 0     = Left ()
-    isZero (x+1) = Right x
