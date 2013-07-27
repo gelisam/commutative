@@ -20,50 +20,53 @@ instance Unorderable () where
   type Unordered () = ()
   unorder = return ()
 
+
 data Unordered_Bool = TT | TF | FF
                       deriving (Eq, Ord, Show)
+
 instance Unorderable Bool where
   type Unordered Bool = Unordered_Bool
-  unorder = do bb <- observe_eq
+  unorder = do bb <- distinguish `on` constructor
                case bb of
-                 Left True  -> return TT
-                 Right _    -> return TF
-                 Left False -> return FF
+                 LL ()    -> return FF
+                 LR () () -> return TF
+                 RR ()    -> return TT
+            where
+    constructor :: Bool -> Either () ()
+    constructor False = Left  ()
+    constructor True  = Right ()
 
 
 data Unordered_Maybe a aa = NN | NJ a | JJ aa
+                            deriving (Eq, Ord, Show)
+
 instance Unorderable a => Unorderable (Maybe a) where
   type Unordered (Maybe a) = Unordered_Maybe a (Unordered a)
-  unorder = do jj <- eq_and_more `on` just_and_more
+  unorder = do jj <- distinguish `on` constructor
                case jj of
-                 Same (False, _)     -> return $ NN
-                 Different (False, _)
-                           (True, x) -> return $ NJ x
-                 Same (True, _)      -> JJ <$> unorder `on` fromJust
+                 LL ()   -> return $ NN
+                 LR () x -> return $ NJ x
+                 RR ()   -> JJ <$> unorder `on` fromJust
             where
-    just_and_more Nothing  = (False, undefined)
-    just_and_more (Just x) = (True, x)
+    constructor :: Maybe a -> Either () a
+    constructor Nothing  = Left ()
+    constructor (Just x) = Right x
+
+
+-- either?
+
 
 data Unordered_Nat = ZZ | ZS Int | SS Unordered_Nat
+                     deriving (Eq, Ord, Show)
+
 instance Unorderable Int where
   type Unordered Int = Unordered_Nat
-  unorder = do ss <- eq_and_more `on` succ_and_more
-               case ss of
-                 Same (False, _)     -> return $ ZZ
-                 Different (False, _)
-                           (True, x) -> return $ ZS x
-                 Same (True, _)      -> SS <$> unorder `on` pred
+  unorder = do nn <- distinguish `on` isZero
+               case nn of
+                 LL ()   -> return $ ZZ
+                 LR () x -> return $ ZS x
+                 RR ()   -> SS <$> unorder `on` pred
             where
-    succ_and_more 0     = (False, undefined)
-    succ_and_more (x+1) = (True, x)
-                 
-
-instance (Ord a, Unorderable b) => Unorderable (a, b) where
-  type Unordered (a, b) = DepEq a (Unordered b) b
-  unorder = do pp <- eq_and_more
-               case pp of
-                 Same (a, ()) -> do
-                   bb <- unorder `on` snd
-                   return $ Same (a, bb)
-                 Different (a, b) (a', b') ->
-                   return $ Different (a, b) (a', b')
+    isZero :: Int -> Either () Int
+    isZero 0     = Left ()
+    isZero (x+1) = Right x

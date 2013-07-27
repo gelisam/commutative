@@ -2,10 +2,8 @@ module Control.Commutative
   ( Commutative ()
   , runCommutative
   , on
-  , DepEq (..)
-  , depEq
-  , eq_and_more
-  , observe_eq
+  , Unordered_Either (..)
+  , distinguish
   )
 where
 
@@ -47,44 +45,25 @@ instance Monad (Commutative r) where
       cy = f x
 
 
--- the type of the second value(s)
--- depends on whether the first are equal.
-data DepEq r a b = Same (r, a) | Different (r, b) (r, b)
-                   deriving (Eq, Ord, Show)
+-- a pair of Either a b values, in which the observation is tainted
+-- if the constructors are both Left or both Right.
+data Unordered_Either a a' b b' = LL a' | RR b' | LR a b
 
--- not commutative because the values of type b can give away
--- whether the arguments were swapped or not.
-depEq :: Ord r => a -> (r, b) -> (r, b) -> DepEq r a b
-depEq x (r, y) (r', y') = case compare r r' of
-                            LT -> Different (r, y) (r', y')
-                            EQ -> Same (r, x)
-                            GT -> Different (r', y') (r, y)
-
--- commutative because the values of type b cannot give away
--- whether the arguments were swapped or not.
+-- The one function whose commutativity ensures that all other computations
+-- of type Commutative are commutative. Better write a proof!
 -- 
--- More formally, let (x , y ) = r
---                    (x', y') = r'
---                    f = runCommutative eq_and_more
--- we want to show that f r r' = f r' r.
--- 
--- wlog, let x <= x'. Then, either
---   f r r' = Same (x, ()) = f r' r
--- or
---   f r r' = Different (x, y) (x', y') = f r' r
+-- let (&) = distinguish
+-- we want to show that r1 & r2 = r2 & r1.
+-- there are four cases:
+--   Left  x1 & Left  x2 = LL ()    = Left  x2 & Left  x1
+--   Right y1 & Right y2 = RR ()    = Right y2 & Right y1
+--   Left  x1 & Right y2 = LR x1 y2 = Right y2 & Left  x1
+--   Right y1 & Left  x2 = LR x2 y1 = Left  x2 & Right y1
 -- qed.
-eq_and_more :: Ord a => Commutative (a, b) (DepEq a () b)
-eq_and_more = Commutative $ depEq ()
-
--- simpler variant
-observe_eq :: Ord a => Commutative a (Either a (a, a))
-observe_eq = dimap wrap unwrap eq_and_more where
-  wrap r = (r, ())
-  unwrap (Same (x, ())) = Left x
-  unwrap (Different (x, ()) (x', ())) = Right (x, x')
-
--- even simpler
-sort2 :: Ord a => Commutative a (a, a)
-sort2 = simplify <$> observe_eq where
-  simplify (Left x) = (x, x)
-  simplify (Right (x, x')) = (x, x')
+distinguish :: Commutative (Either a b) (Unordered_Either a ()
+                                                          b ())
+distinguish = Commutative $ merge where
+  merge (Left  _) (Left  _) = LL ()
+  merge (Right _) (Right _) = RR ()
+  merge (Left  x) (Right y) = LR x y
+  merge (Right y) (Left  x) = LR x y
