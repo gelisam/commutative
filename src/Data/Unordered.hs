@@ -53,7 +53,22 @@ instance Unorderable a => Unorderable (Maybe a) where
     constructor (Just x) = Right x
 
 
--- either?
+-- Unordered_Either is defined in Control.Commutative
+
+instance (Unorderable a, Unorderable b) => Unorderable (Either a b) where
+  type Unordered (Either a b) = Unordered_Either a (Unordered a)
+                                                 b (Unordered b)
+  unorder = do ee <- distinguish
+               case ee of
+                 LL ()  -> LL <$> unorder `on` fromLeft
+                 LR x y -> return $ LR x y
+                 RR ()  -> RR <$> unorder `on` fromRight
+            where
+    fromLeft :: Either a b -> a
+    fromLeft (Left x) = x
+    
+    fromRight :: Either a b -> b
+    fromRight (Right y) = y
 
 
 data Unordered_Nat = ZZ | ZS Int | SS Unordered_Nat
