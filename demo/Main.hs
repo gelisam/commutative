@@ -1,4 +1,5 @@
 import Control.Commutative
+import Data.Nat
 import Data.Maybe
 import Data.Unordered
 
