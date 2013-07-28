@@ -49,3 +49,11 @@ instance (Commutative_Eq a, Commutative_Eq b) => Commutative_Eq (Either a b) whe
                         Left False -> commutative_eq `on` fromLeft
                         Left True  -> commutative_eq `on` fromRight
                         Right _    -> return False
+
+-- |
+-- prop> (x == y) == runCommutative commutative_eq x (y :: (Bool, Bool))
+-- prop> (x /= y) == runCommutative commutative_neq x (y :: (Bool, Bool))
+instance (Commutative_Eq a, Commutative_Eq b) => Commutative_Eq (a, b) where
+  commutative_eq = do b1 <- commutative_eq `on` fst
+                      b2 <- commutative_eq `on` snd
+                      return (b1 && b2)

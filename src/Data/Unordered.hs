@@ -6,6 +6,7 @@ import Data.Maybe
 
 import Control.Commutative
 import Data.Either.Extra
+import Data.Ord.Commutative
 
 
 class Unorderable a where
@@ -64,3 +65,20 @@ instance (Unorderable a, Unorderable b) => Unorderable (Either a b) where
                  LL ()  -> LL <$> unorder `on` fromLeft
                  LR x y -> return $ LR x y
                  RR ()  -> RR <$> unorder `on` fromRight
+
+
+-- if the As are different, the pairs are given in a sorted order
+data Unordered_Pair a b bb = Same a bb | Diff (a, b) (a, b)
+                             deriving (Eq, Ord, Show)
+
+instance (Eq a, Commutative_Ord a, Unorderable b) => Unorderable (a, b) where
+  type Unordered (a, b) = Unordered_Pair a b (Unordered b)
+  unorder = do
+      (min1, max1) <- commutative_sort2 `on` fst
+      diff <- distinguishBy (fst_is max1)
+      case diff of
+        Left False    -> error "commutative_sort2 is inconsistent with (==)"
+        Left True     -> Same max1 <$> unorder `on` snd
+        Right (p, p') -> return $ Diff p p'
+    where
+      fst_is x p = fst p == x

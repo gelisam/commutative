@@ -68,3 +68,19 @@ instance (Commutative_Ord a, Commutative_Ord b) => Commutative_Ord (Either a b) 
     where
       left2  (x, y) = (Left x, Left y)
       right2 (x, y) = (Right x, Right y)
+
+-- |
+-- prop> sort [x, y] == list2 (runCommutative commutative_sort2 x (y :: (Bool, Bool)))
+-- prop> min x y == runCommutative commutative_min x (y :: (Bool, Bool))
+-- prop> max x y == runCommutative commutative_max x (y :: (Bool, Bool))
+instance (Eq a, Commutative_Ord a, Commutative_Ord b) => Commutative_Ord (a, b) where
+  commutative_sort2 = do
+      (min1, max1) <- commutative_sort2 `on` fst
+      diff <- distinguishBy (fst_is max1)
+      case diff of
+        Left False -> error "commutative_sort2 is inconsistent with (==)"
+        Left True  -> cons2 max1 <$> commutative_sort2 `on` snd
+        Right pp   -> return pp
+    where
+      fst_is x p = fst p == x
+      cons2 x (y1, y2) = ((x, y1), (x, y2))
