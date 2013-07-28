@@ -17,10 +17,10 @@ add :: Commutative Nat Nat
 add = unordered_add <$> unorder
 
 -- | Commutative version of (*)
+-- prop> fromEnum x * fromEnum y == fromEnum (runCommutative mul x y)
+-- 
 -- >>> fromEnum $ runCommutative mul 2 1
 -- 2
--- 
--- prop> fromEnum x * fromEnum y == fromEnum (runCommutative mul x y)
 mul :: Commutative Nat Nat
 mul = unordered_mul <$> unorder
 
