@@ -24,6 +24,8 @@ Library
   hs-source-dirs: src
   
   Exposed-modules:     Control.Commutative,
+                       Data.Eq.Commutative,
+                       Data.Ord.Commutative,
                        Data.Unordered
   -- Other-modules:       
   
