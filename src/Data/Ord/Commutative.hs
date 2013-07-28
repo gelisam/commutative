@@ -1,6 +1,7 @@
 module Data.Ord.Commutative where
 
 import Control.Applicative
+
 import Control.Commutative
 
 

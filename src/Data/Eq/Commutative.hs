@@ -1,6 +1,7 @@
 module Data.Eq.Commutative where
 
 import Control.Applicative
+
 import Control.Commutative
 
 

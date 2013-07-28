@@ -2,8 +2,9 @@
 module Data.Unordered where
 
 import Control.Applicative
-import Control.Commutative
 import Data.Maybe
+
+import Control.Commutative
 
 
 class Unorderable a where
