@@ -4,6 +4,7 @@ module Control.Commutative
   , on
   , Unordered_Either (..)
   , distinguish
+  , distinguishBy
   )
 where
 
@@ -67,3 +68,13 @@ distinguish = Commutative $ merge where
   merge (Right _) (Right _) = RR ()
   merge (Left  x) (Right y) = LR x y
   merge (Right y) (Left  x) = LR x y
+
+-- simpler version with a predicate instead of Either
+distinguishBy :: (r -> Bool) -> Commutative r (Either Bool (r, r))
+distinguishBy p = do bb <- distinguish `on` isP
+                     case bb of
+                       LL ()    -> return $ Left False
+                       RR ()    -> return $ Left True
+                       LR r1 r2 -> return $ Right (r1, r2)
+                  where
+  isP x = (if p x then Right else Left) x
