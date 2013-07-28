@@ -5,6 +5,7 @@ import Control.Applicative
 import Data.Maybe
 
 import Control.Commutative
+import Data.Either.Extra
 
 
 class Unorderable a where
@@ -63,9 +64,3 @@ instance (Unorderable a, Unorderable b) => Unorderable (Either a b) where
                  LL ()  -> LL <$> unorder `on` fromLeft
                  LR x y -> return $ LR x y
                  RR ()  -> RR <$> unorder `on` fromRight
-            where
-    fromLeft :: Either a b -> a
-    fromLeft (Left x) = x
-    
-    fromRight :: Either a b -> b
-    fromRight (Right y) = y
