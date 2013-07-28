@@ -6,6 +6,7 @@ import Data.Maybe
 
 import Control.Commutative
 import Data.Either.Extra
+import Data.List.Extra
 import Data.Ord.Commutative
 
 
@@ -82,3 +83,19 @@ instance (Eq a, Commutative_Ord a, Unorderable b) => Unorderable (a, b) where
         Right (p, p') -> return $ Diff p p'
     where
       fst_is x p = fst p == x
+
+
+data Unordered_List a = Nulls | NC a [a] | CC (Unordered_Pair a [a] (Unordered_List a))
+                        deriving (Eq, Ord, Show)
+
+instance (Eq a, Commutative_Ord a) => Unorderable [a] where
+  type Unordered [a] = Unordered_List a
+  unorder = do ll <- distinguish `on` constructor
+               case ll of
+                 LL ()        -> return $ Nulls
+                 LR () (x,xs) -> return $ NC x xs
+                 RR ()        -> CC <$> unorder `on` fromCons
+            where
+    constructor :: [a] -> Either () (a,[a])
+    constructor []     = Left ()
+    constructor (x:xs) = Right (x,xs)

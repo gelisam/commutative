@@ -6,6 +6,7 @@ import Data.Maybe
 
 import Control.Commutative
 import Data.Either.Extra
+import Data.List.Extra
 
 -- $setup
 -- >>> let  list2 (x, y) = [x, y]
@@ -84,3 +85,17 @@ instance (Eq a, Commutative_Ord a, Commutative_Ord b) => Commutative_Ord (a, b) 
     where
       fst_is x p = fst p == x
       cons2 x (y1, y2) = ((x, y1), (x, y2))
+
+-- |
+-- prop> sort [x, y] == list2 (runCommutative commutative_sort2 x (y :: [Bool]))
+-- prop> min x y == runCommutative commutative_min x (y :: [Bool])
+-- prop> max x y == runCommutative commutative_max x (y :: [Bool])
+instance (Eq a, Commutative_Ord a) => Commutative_Ord [a] where
+  commutative_sort2 = do
+      diff <- distinguishBy isCons
+      case diff of
+        Right ll   -> return ll
+        Left False -> return ([], [])
+        Left True  -> cons2 <$> commutative_sort2 `on` fromCons
+    where
+      cons2 ((x,xs), (y,ys)) = (x:xs, y:ys)

@@ -5,6 +5,7 @@ import Data.Maybe
 
 import Control.Commutative
 import Data.Either.Extra
+import Data.List.Extra
 
 
 -- Minimal complete definition:
@@ -58,3 +59,13 @@ instance (Commutative_Eq a, Commutative_Eq b) => Commutative_Eq (a, b) where
                       if eq1
                         then commutative_eq `on` snd
                         else return False
+
+-- |
+-- prop> (x == y) == runCommutative commutative_eq x (y :: [Bool])
+-- prop> (x /= y) == runCommutative commutative_neq x (y :: [Bool])
+instance Commutative_Eq a => Commutative_Eq [a] where
+  commutative_eq = do diff <- distinguishBy isCons
+                      case diff of
+                        Left False -> return True
+                        Left True  -> commutative_eq `on` fromCons
+                        Right _    -> return False
