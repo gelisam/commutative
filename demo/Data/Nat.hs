@@ -11,6 +11,37 @@ import Test.QuickCheck
 data Nat = Zero | Succ Nat
            deriving (Eq, Ord, Show)
 
+-- | Commutative version of (+)
+-- prop> fromEnum x + fromEnum y == fromEnum (runCommutative add x y)
+add :: Commutative Nat Nat
+add = unordered_add <$> unorder
+
+-- | Commutative version of (*)
+-- >>> fromEnum $ runCommutative mul 2 1
+-- 2
+-- 
+-- prop> fromEnum x * fromEnum y == fromEnum (runCommutative mul x y)
+mul :: Commutative Nat Nat
+mul = unordered_mul <$> unorder
+
+unordered_add :: Unordered Nat -> Nat
+unordered_add ZZ      = Zero
+unordered_add (ZS x)  = Succ x
+unordered_add (SS xx) = 2 + unordered_add xx
+
+unordered_mul :: Unordered Nat -> Nat
+unordered_mul ZZ      = Zero
+unordered_mul (ZS x)  = Zero
+unordered_mul (SS xx) = mul_suc xx where
+  -- runCommutative mul_suc x y == (x+1)*(y+1)
+  mul_suc :: Unordered Nat -> Nat
+  mul_suc ZZ      = Succ Zero         -- (0+1)*(0+1)
+  mul_suc (ZS x)  = Succ (Succ x)     -- (0+1)*(x+2)
+  mul_suc (SS xx) = mul_suc xx        -- (x+2)*(y+2) = xy + 2x + 2y + 4
+                  + unordered_add xx  --             = (xy+x+y+1)  + x+y + 3
+                  + 3                 --             = (x+1)*(y+1) + x+y + 3
+
+
 instance Arbitrary Nat where
   arbitrary = fmap fromList arbitrary where
     fromList []      = Zero
