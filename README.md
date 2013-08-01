@@ -1,5 +1,5 @@
-commutative
-===========
+the commutativity monad
+=======================
 
 Using the type system to guarantee commutativity.
 
